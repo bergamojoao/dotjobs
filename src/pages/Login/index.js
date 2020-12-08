@@ -16,7 +16,7 @@ const Login = () => {
         <Button mode='outlined' style={style.button} onPress={() => navigation.navigate('SignUp')}>
           Ainda não sou cadastrado
         </Button>
-        <Button mode='contained' style={style.button} onPress={() => alert('Logou-se')}>
+        <Button mode='contained' style={style.button} onPress={() => navigation.navigate('FirstAccess')}>
           <Text style={style.btnTxt}>ENTRAR</Text>
         </Button>
       </View>
