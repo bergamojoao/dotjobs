@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, View, Text } from 'react-native';
+import { Image, View, Text, ScrollView } from 'react-native';
 import {Button, ProgressBar, TextInput, Title} from 'react-native-paper'
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -7,19 +7,47 @@ import Logo from '../../assets/logo.png';
 
 import style from './styles';
 
+import api from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const Form = (props) => {
+  const [name,setName] = useState('');
+  const [email,setEmail] = useState('');
+  const [password,setPassword] = useState('');
+
+  async function handleSubmit(){
+
+    const response = await api.post('/users',{
+      name,
+      email,
+      password,
+      status:0
+    });
+
+    if(response.status===201){
+      await AsyncStorage.setItem('$user_id',response.data.id)
+      props.handleAdvance()
+    }else{
+      console.log("erro",response.data)
+    }
+
+  }
+
+
   return (
-      <View style={style.form}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={style.form}>
         <Title>Primeiro insira seu nome completo</Title>
-        <TextInput label="Nome completo" mode='outlined' style={style.input}/>
+        <TextInput label="Nome completo" mode='outlined' style={style.input} value={name} onChangeText={setName}/>
         <Title>Agora o email que irá usar</Title>
-        <TextInput label="Email" keyboardType="email-address" mode='outlined' style={style.input}/>
+        <TextInput label="Email" keyboardType="email-address" mode='outlined' style={style.input} value={email} onChangeText={setEmail}/>
         <Title>Por fim, sua senha.</Title>
-        <TextInput secureTextEntry passwordRules label="Senha" mode='outlined' style={style.input}/>
-        <Button style={{marginTop:15}} icon="arrow-right" mode="contained" onPress={props.handleAdvance}>
+        <TextInput secureTextEntry passwordRules label="Senha" mode='outlined' style={style.input} value={password} onChangeText={setPassword}/>
+        <Button style={{marginTop:15}} icon="arrow-right" mode="contained" onPress={handleSubmit}>
           Avançar
         </Button>
-      </View>
+      </ScrollView>
   );
 }
 
@@ -51,7 +79,8 @@ const SignUp = () => {
     setStepText('Etapa 2: Confirmação de email')
   }
   return (
-      <View style={style.container}>
+      <View
+        style={style.container}>
         <Image source={Logo}style={style.image}/>
         {step === 1 ? <Form handleAdvance={handleAdvance}/> : <Confirmation/>}
         <View style={style.footer}>

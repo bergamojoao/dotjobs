@@ -23,12 +23,13 @@ export default StyleSheet.create({
         fontSize:25
     },
     progress:{
-        marginTop:70,
+        marginTop:10,
         width:300,
         height:20,
         borderRadius:5
     },
     form:{
+        flex:1,
         width:'80%'
     },
     footer:{
