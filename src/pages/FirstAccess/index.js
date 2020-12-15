@@ -1,21 +1,52 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, View, Text } from 'react-native';
 import {Button, Checkbox, ProgressBar, TextInput, Title} from 'react-native-paper'
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Logo from '../../assets/logo.png';
 
 import style from './styles';
+import api from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+async function handleSubmitEmployer(data){
+
+  const { cep, user_id, address, phone } = data
+
+
+  const response = await api.post('/employers',{
+    phone,
+    cep,
+    address,
+    user_id
+  });
+
+  if(response.status === 201){
+    
+    await api.put(`/users/${user_id}`,{
+      status:"1"
+    })
+
+    await AsyncStorage.setItem('$employer',JSON.stringify(response.data))
+    
+  }else{
+    alert('Erro de cadastro')
+  }
+}
 
 const Form = (props) => {
   return (
       <View style={style.form}>
         <Title>Informe seu celular</Title>
-        <TextInput label="Celular" keyboardType='number-pad' mode='outlined' style={style.input}/>
+        <TextInput label="Celular" keyboardType='number-pad' mode='outlined' style={style.input} 
+                   value={props.phone.phone} onChangeText={props.phone.setPhone}/>
         <Title>Agora seu CEP</Title>
-        <TextInput label="CEP" keyboardType="email-address" mode='outlined' style={style.input}/>
+        <TextInput label="CEP" keyboardType="email-address" mode='outlined' style={style.input}
+                   value={props.cep.cep} onChangeText={props.cep.setCep}/>
         <Title>Por fim, seu endereço</Title>
-        <TextInput label="Endereço" keyboardType="email-address" mode='outlined' style={style.input}/>
+        <TextInput label="Endereço" keyboardType="email-address" mode='outlined' style={style.input}
+                   value={props.address.address} onChangeText={props.address.setAddress}/>
         <Button style={{marginTop:15}} icon="arrow-right" mode="contained" onPress={props.handleAdvance}>
           Avançar
         </Button>
@@ -25,9 +56,31 @@ const Form = (props) => {
 
 const Option = (props) => {
   const [checked,setChecked] = useState(false);
+  const [checked2,setChecked2] = useState(false);
+
+  const user = props.data.user
+
+
+  async function handleSubmit(){
+
+    const {phone, address, cep} = props.data;
+
+    await handleSubmitEmployer({
+      phone,
+      address,
+      cep,
+      user_id:user.id
+    })
+
+
+    props.handleAdvance()
+
+  }
+
   return (
     <View style={style.form}>
-      <Title style={{marginBottom:20}}>Qual é seu interesse no DotJobs?</Title>
+      <Title style={{marginBottom:20}}>Certo, {user.name}.</Title>
+      <Title>Qual é seu interesse no DotJobs?</Title>
       <View style={{flexDirection:'row',alignItems:'center'}}>
         <Checkbox
           status={checked ? 'checked' : 'unchecked'}
@@ -37,13 +90,13 @@ const Option = (props) => {
       </View>
       <View style={{flexDirection:'row',alignItems:'center'}}>
         <Checkbox
-          status={checked ? 'checked' : 'unchecked'}
-          onPress={()=>setChecked(!checked)}
+          status={checked2 ? 'checked' : 'unchecked'}
+          onPress={()=>setChecked2(!checked2)}
         />
         <Text>Sou freelancer e quero procurar serviços</Text>
       </View>
 
-      <Button style={{marginTop:40}} icon="arrow-right" mode="contained" onPress={props.handleAdvance}>
+      <Button style={{marginTop:40}} icon="arrow-right" mode="contained" onPress={handleSubmit}>
         Avançar
       </Button>
     </View> 
@@ -59,7 +112,7 @@ const Confirmation = () => {
       <View style={{width:'70%'}}>
         <Title style={{fontSize:25,textAlign:'center'}}>Legal!</Title>
         <Title style={{fontSize:25,textAlign:'center'}}>Agora você já pode anunciar o que está precisando e aguardar algum freelancer se interessar!</Title>
-        <Button style={{marginTop:40}} mode='outlined' onPress={()=>{navigation.navigate('Login')}}>
+        <Button style={{marginTop:40}} mode='outlined' onPress={()=>{navigation.navigate('Home')}}>
           <Text style={{fontSize:18}}>ANUNCIAR AGORA</Text>
         </Button>
       </View>
@@ -74,15 +127,34 @@ const FirstAccess = () => {
   const [progress, setProgress] = useState(step/3);
   const [stepText, setStepText] = useState('Etapa 1: Informações básicas')
 
+  const [phone, setPhone] = useState('');
+  const [cep, setCep] = useState('');
+  const [address, setAddress] = useState('');
+
+  const navigation = useNavigation();
+  const route = useRoute();
+
+  const user = route.params.user;
+
   function handleAdvance(){
     setStep(step+1);
     setProgress(progress+0.333333)
     setStepText('Etapa 1: Informações básicas')
   }
+
   return (
       <View style={style.container}>
         <Image source={Logo}style={style.image}/>
-        {step === 1 ? <Form handleAdvance={handleAdvance}/> : step === 2 ? <Option handleAdvance={handleAdvance}/> : <Confirmation/>}
+        {step === 1 ? <Form handleAdvance={handleAdvance} 
+                        phone={{phone,setPhone}}
+                        cep={{cep,setCep}}
+                        address={{address,setAddress}}
+                      /> : 
+        step === 2 ? <Option handleAdvance={handleAdvance} data={{
+                        phone,cep,address,user}
+                      }/> :
+                     <Confirmation/>
+        }
         <View style={style.footer}>
           <ProgressBar progress={progress} style={style.progress}/>
           <Text style={{fontSize:18}}>{stepText}</Text>
