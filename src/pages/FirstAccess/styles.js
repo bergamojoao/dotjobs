@@ -23,7 +23,7 @@ export default StyleSheet.create({
         fontSize:25
     },
     progress:{
-        marginTop:70,
+        marginTop:50,
         width:300,
         height:20,
         borderRadius:5
