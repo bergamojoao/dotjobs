@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import FirstAccess from './pages/FirstAccess';
 import Home from './pages/Home';
+import CreateService from './pages/CreateService';
+
 
 const AppStack = createStackNavigator();
 
@@ -13,6 +15,7 @@ export default function Routes() {
     return (
         <NavigationContainer>
             <AppStack.Navigator screenOptions={{headerShown: false}}>
+                <AppStack.Screen name="CreateService" component={CreateService}/>
                 <AppStack.Screen name="Login" component={Login}/>
                 <AppStack.Screen name="SignUp" component={SignUp}/>
                 <AppStack.Screen name="FirstAccess" component={FirstAccess}/>
