@@ -8,6 +8,7 @@ import FirstAccess from './pages/FirstAccess';
 import Home from './pages/Home';
 import CreateService from './pages/CreateService';
 import UpdateServiceLocalization from './pages/UpdateServiceLocalization';
+import UpdateServiceDescription from './pages/UpdateServiceDescription';
 
 
 const AppStack = createStackNavigator();
@@ -22,6 +23,7 @@ export default function Routes() {
                 <AppStack.Screen name="Home" component={Home}/>
                 <AppStack.Screen name="CreateService" component={CreateService}/>
                 <AppStack.Screen name="UpdateServiceLocalization" component={UpdateServiceLocalization}/>
+                <AppStack.Screen name="UpdateServiceDescription" component={UpdateServiceDescription}/>
             </AppStack.Navigator>
         </NavigationContainer>
     );
