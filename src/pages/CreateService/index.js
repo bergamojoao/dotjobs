@@ -15,6 +15,22 @@ const CreateService = () => {
     const [address, setAddress] = useState('');
     const [price, setPrice] = useState('');
 
+    async function handleSubmit() {
+
+        const response = await api.post('/services', {
+            description,
+            localization:address,
+            price
+        });
+
+        if (response.status === 200) {
+            navigation.navigate('Home');
+        } else {
+            console.log("erro", response.data)
+        }
+
+    }
+
     return (
         <View style={style.container}>
             <Image source={Logo} style={style.image}/>
@@ -29,7 +45,7 @@ const CreateService = () => {
                 <Title>Quanto custará?</Title>
                 <TextInput label="Preço" keyboardType="number-pad" mode='outlined' style={style.input}
                         value={price} onChangeText={setPrice}/>
-                <Button style={{marginTop: 15}} mode="contained">
+                <Button style={{marginTop: 15}} mode="contained" onPress={handleSubmit}>
                     CADASTRAR
                 </Button>
             </View>

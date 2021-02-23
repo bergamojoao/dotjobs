@@ -12,6 +12,21 @@ import style from './styles';
 const UpdateServiceLocalization = () => {
 
     const [address, setAddress] = useState('');
+    const navigation = useNavigation();
+
+    async function handleUpdate() {
+
+        const response = await api.put('/services/localization', {
+            localization:address
+        });
+
+        if (response.status === 200) {
+            navigation.navigate('Home');
+        } else {
+            console.log("erro", response.data)
+        }
+
+    }
 
     return (
         <View style={style.container}>
@@ -21,7 +36,7 @@ const UpdateServiceLocalization = () => {
                 <Title>Onde será realizado o serviço?</Title>
                 <TextInput label="Endereço" mode='outlined' style={style.input}
                         value={address} onChangeText={setAddress}/>
-                <Button style={{marginTop: 15}} mode="contained">
+                <Button style={{marginTop: 15}} mode="contained" onPress={handleUpdate}>
                     ATUALIZAR
                 </Button>
             </View>
