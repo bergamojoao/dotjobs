@@ -18,8 +18,8 @@ export default function Routes() {
         <NavigationContainer>
             <AppStack.Navigator screenOptions={{headerShown: false}}>
                 <AppStack.Screen name="Login" component={Login}/>
+                <AppStack.Screen name="Services" component={Services}/>
                 <AppStack.Screen name="SignUp" component={SignUp}/>
-                <AppStack.Screen name="FirstAccess" component={FirstAccess}/>
                 <AppStack.Screen name="Home" component={Home}/>
                 <AppStack.Screen name="CreateService" component={CreateService}/>
                 <AppStack.Screen name="UpdateServiceLocalization" component={UpdateServiceLocalization}/>
