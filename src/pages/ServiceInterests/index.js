@@ -1,20 +1,47 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, Image, StyleSheet, Touchable } from 'react-native'
-import { Modal, Button} from 'react-native-paper'
-import { TextInput, TouchableOpacity } from 'react-native-gesture-handler'
+import { Modal, Button, IconButton, TextInput} from 'react-native-paper'
+import { TouchableOpacity } from 'react-native-gesture-handler'
 import Icon from 'react-native-vector-icons/EvilIcons'
 import Icon2 from 'react-native-vector-icons/Ionicons'
 import api from '../../services/api'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function ServiceInterests({route, navigation}) {
     const [interests, setInterests] = useState([])
     const [visible, setVisible] = useState(false)
+    const [visibleMessage, setVisibleMessage] = useState(false)
     const [interest, setInterest] = useState(null)
+    const [messages, setMessages] = useState([])
+    const [message, setMessage] = useState("")
 
     const [errorMessage, setErorrMessage] = useState(null)
 
+    async function sendMessage(){
+        try {
+            await api.post(`/messages`,{
+                interest_id:interest,
+                user_id: await AsyncStorage.getItem("$user"),
+                message
+            })
+            setMessage("")
+            await getMessages()
+        } catch(error) {
+            setErorrMessage('Não foi possível enviar mensagem')
+        }
+    }
 
-    async function getServices() {
+    async function getMessages() {
+        try {
+            const response = await api.get(`/messages/byInterest/${interest}`)
+            setMessages(response.data)
+        } catch(error) {
+            setErorrMessage('Não foi possível carregar as mensagens')
+        }
+    }
+
+
+    async function getInterests() {
             try {
                 const {service_id} = route.params
                 const response = await api.get(`/interests/byService/${service_id}`)
@@ -35,11 +62,14 @@ export default function ServiceInterests({route, navigation}) {
         }
     }
 
-    useEffect(() => {getServices()}, [])
+    useEffect(() => {getInterests()}, [])
 
     const showModal = (interest_id) => {setInterest(interest_id);setVisible(true)};
     const hideModal = () => setVisible(false);
     const containerStyle = {backgroundColor: 'white', padding: 20, };
+
+    const showMessageModal = (interest_id) => {setInterest(interest_id);getMessages();setVisibleMessage(true)};
+    const hideMessageModal = () => setVisibleMessage(false);
 
     return (
         <View style={style.container}>
@@ -58,7 +88,7 @@ export default function ServiceInterests({route, navigation}) {
                         }
                         renderItem={({item}) => {
                             return (
-                                <TouchableOpacity style={style.card} onPress={()=>{item.status == 0 && showModal(item.id) }}>
+                                <TouchableOpacity style={style.card} onPress={()=>{if(item.status == 0)showModal(item.id); else showMessageModal(item.id) }}>
                                     <View style={style.info}>
                                         <Image style={style.image} source={{
                                             uri: item.freelancer.user.picture !== null  ?
@@ -89,6 +119,26 @@ export default function ServiceInterests({route, navigation}) {
                     <Button mode='contained' style={style.button} onPress={hideModal}>
                         <Text style={style.btnTxt}>NÃO</Text>
                     </Button>
+                </View>
+            </Modal>
+            <Modal visible={visibleMessage} onDismiss={hideMessageModal} contentContainerStyle={containerStyle}>
+                <Text style={[style.btnTxt,{paddingBottom:10, paddingTop:50}]}>Mensagens</Text>
+                <FlatList
+                    inverted
+                    data={messages}
+                    keyExtractor={ data => data.id }
+                    renderItem={({item}) =>{
+                        return (
+                                <View style={{flexDirection:'column', paddingBottom:10}}>
+                                    <Text style={{fontWeight:'bold', fontSize:18}}>{item.user.name}: </Text>
+                                    <Text style={{fontSize:15}}>{item.message}</Text>
+                                </View>
+                        )
+                    }}
+                />
+                <View style={{flexDirection:'row', paddingBottom:5,alignItems:'center'}}>
+                    <TextInput placeholder="Digite sua mensagem..."  style={{flex:15}} value={message} onChangeText={setMessage}/>
+                    <IconButton icon="send" style={{backgroundColor:"#e3b529"}} size={30} onPress={sendMessage}/>
                 </View>
             </Modal>
         </View>

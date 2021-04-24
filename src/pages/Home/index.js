@@ -9,7 +9,7 @@ import api from '../../services/api';
 
 import style from './styles';
 
-const Home = () => {
+const Home = ({route}) => {
 
     const [freelancer, setFreelancer] = useState(null)
     const [employer, setEmployer] = useState(null)
@@ -17,9 +17,9 @@ const Home = () => {
 
     useEffect (() => {
         async function getUser(){
+            AsyncStorage.setItem("$user",route.params.user.id)
             setFreelancer(JSON.parse(await AsyncStorage.getItem('$freelancer')));
             setEmployer(JSON.parse(await AsyncStorage.getItem('$employer')));
-            console.log(freelancer, employer)
         }
 
         getUser()
