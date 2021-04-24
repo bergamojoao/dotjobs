@@ -9,7 +9,7 @@ import api from '../../services/api';
 
 import style from './styles';
 
-const CreateService = () => {
+const CreateService = ({route, navigation}) => {
 
     const [description, setDescription] = useState('');
     const [address, setAddress] = useState('');
@@ -17,17 +17,28 @@ const CreateService = () => {
 
     async function handleSubmit() {
 
-        const response = await api.post('/services', {
-            description,
-            localization:address,
-            price
-        });
+        const {employer_id} = route.params
 
-        if (response.status === 200) {
-            navigation.navigate('Home');
-        } else {
-            console.log("erro", response.data)
+        try{
+            console.log(route.params)
+            const response = await api.post('/services', {
+                employer_id,
+                description,
+                localization:address,
+                price
+            });
+    
+            if (response.status === 201) {
+                navigation.navigate('Home');
+            } else {
+                console.log("erro", response.data)
+            }
+
+        }catch(error){
+            console.log(error)
         }
+
+        
 
     }
 

@@ -41,8 +41,7 @@ async function handleSubmitEmployer(data) {
 
 async function handleSubmitFreelancer(data) {
 
-    const {cep, user_id, address, phone, rg_picture, cpf_picture, description} = data
-
+    const {cep, user_id, address, phone, rg_picture, cpf_picture, description, rg, cpf} = data
 
     const response = await api.post('/freelancers', {
         phone,
@@ -51,7 +50,9 @@ async function handleSubmitFreelancer(data) {
         user_id,
         rg_picture,
         cpf_picture,
-        description
+        description,
+        rg,
+        cpf
     });
 
     if (response.status === 201) {
@@ -91,6 +92,8 @@ const FormFreelancer = (props) => {
     const [rg_picture, setRgPicture] = useState('');
     const [cpf_picture, setCpfPicture] = useState('');
     const [description, setDescription] = useState('');
+    const [rg, setRG] = useState('');
+    const [cpf, setCPF] = useState('');
 
     async function handleSubmit() {
 
@@ -105,8 +108,12 @@ const FormFreelancer = (props) => {
             rg_picture,
             cpf_picture,
             description,
+            rg,
+            cpf,
             user_id: user.id
         })
+
+        props.handleAdvance(5)
 
     }
 
@@ -174,10 +181,16 @@ const FormFreelancer = (props) => {
             {cpf_picture !== '' &&
             <Text style={{fontWeight: 'bold', color: '#0aa134', marginTop: 10, fontSize: 18}}>CPF selecionado com
                 sucesso!</Text>}
+            <Title>Por favor, o número do seu RG</Title>
+            <TextInput label="RG" keyboardType="numbers-and-punctuation" mode='outlined' style={style.input}
+                       value={rg} onChangeText={setRG}/>
+            <Title>Agora, o número do seu CPF</Title>
+            <TextInput label="CPF" keyboardType="numbers-and-punctuation" mode='outlined' style={style.input}
+                       value={cpf} onChangeText={setCPF}/>
             <Title style={{marginTop: 40}}>Conte-nos um pouco sobre com o que voce trabalha</Title>
             <TextInput label="Descreva com o que voce trabalha" mode='outlined' multiline style={style.input}
                        value={description} onChangeText={setDescription}/>
-            <Button style={{marginTop: 5}} icon="arrow-right" mode="contained" onPress={() => props.handleAdvance(5)}>
+            <Button style={{marginTop: 5}} icon="arrow-right" mode="contained" onPress={handleSubmit}>
                 Avançar
             </Button>
         </ScrollView>

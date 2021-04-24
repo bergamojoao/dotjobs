@@ -1,19 +1,35 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, Image, StyleSheet } from 'react-native'
-import { TextInput } from 'react-native-gesture-handler'
+import { View, Text, FlatList, Image, StyleSheet, Touchable } from 'react-native'
+import { Modal, Button} from 'react-native-paper'
+import { TextInput, TouchableOpacity } from 'react-native-gesture-handler'
 import Icon from 'react-native-vector-icons/EvilIcons'
 import Icon2 from 'react-native-vector-icons/Ionicons'
 import api from '../../services/api'
 
-export default function Services() {
+export default function Services({route, navigation}) {
     const [services, setServices] = useState([])
+    const [visible, setVisible] = useState(false)
+    const [service_id, setServiceId] = useState(null)
 
     const [errorMessage, setErorrMessage] = useState(null)
+
+    async function declareInteresting(){
+        const {freelancer_id} = route.params
+        try {
+            await api.post('/interests',{
+                service_id,
+                freelancer_id,
+                status:0
+            })
+            hideModal()
+        } catch(error) {
+            setErorrMessage('Não foi possível encontrar serviços')
+        }
+    }
 
     async function getServices() {
             try {
                 const response = await api.get('/services')
-
                 setServices(response.data)
             } catch(error) {
                 setErorrMessage('Não foi possível encontrar serviços')
@@ -26,6 +42,10 @@ export default function Services() {
 
     }
 
+    const showModal = (service_id) => {setServiceId(service_id);setVisible(true)};
+    const hideModal = () => setVisible(false);
+    const containerStyle = {backgroundColor: 'white', padding: 20, };
+
     return (
         <View style={style.container}>
             <View style={style.header}>
@@ -36,61 +56,51 @@ export default function Services() {
             </View>
             <View>
                 <View>
-                    {
-                        errorMessage && services.length > 0 ?
-                        (
-                            <FlatList 
-                                data={services} 
-                                style={{ marginBottom: 100, paddingTop: 10 }}
-                                keyExtractor={ data => data.id }
-                                ListHeaderComponent={
-                                    () => (
+                    <FlatList 
+                        data={services} 
+                        style={{ marginBottom: 100, paddingTop: 10 }}
+                        keyExtractor={ data => data.id }
+                        ListHeaderComponent={
+                            () => (
+                                <View>
+                                    <Text>{`${services.length} resultados encontrados baseados nas suas escolhas`}</Text>
+                                </View>
+                            )
+                        }
+                        renderItem={({item}) => {
+                            return (
+                                <TouchableOpacity style={style.card} onPress={()=>showModal(item.id)}>
+                                    <View style={style.info}>
+                                        <Image style={style.image} source={{
+                                            uri: item.picture !== undefined ?
+                                            item.picture :
+                                            'https://cdn4.iconfinder.com/data/icons/basic-ui-2-line/32/person-people-man-profile-human-512.png'
+                                        }} />
                                         <View>
-                                            <Text>{`${services.length} resultados encontrados baseados nas suas escolhas`}</Text>
+                                            <Text style={{fontSize: 17, paddingBottom: 5}}>{item.description}</Text>
+                                            <Text style={{fontWeight: 'bold'}}>{item.localization}</Text>
                                         </View>
-                                    )
-                                }
-                                renderItem={({item}) => {
-                                    return (
-                                        <View style={style.card}>
-                                            <View style={style.info}>
-                                                <Image style={style.image} source={{
-                                                    uri: item.picture !== undefined ?
-                                                    item.picture :
-                                                    'https://cdn4.iconfinder.com/data/icons/basic-ui-2-line/32/person-people-man-profile-human-512.png'
-                                                }} />
-                                                <View>
-                                                    <Text style={{fontSize: 17, paddingBottom: 5}}>{item.name}</Text>
-                                                    <Text style={{fontWeight: 'bold'}}>{item.service}</Text>
-                                                </View>
-                                            </View>
-                                            <View style={style.visualInfo}>
-                                                <View style={style.stars}>
-                                                {
-                                                    Array.from(Array(5).keys()).map((a, index) => (
-                                                        <View key={item.id+'_'+index}>
-                                                            {
-                                                                index < item.stars ?
-                                                                <Icon2 name="ios-star" style={style.star} size={17} color='#F1C644' /> :
-                                                                <Icon2 name="ios-star" style={style.star} size={17} color='#D4D4D4' />
-
-                                                            }
-                                                        </View>
-                                                    ))
-                                                }
-                                                </View>
-                                                <Text style={style.price}>{String(item.price).replace(/\w/g, '$')}</Text>
-                                            </View>
-                                        </View>
-                                    )
-                                }}
-                            />
-                        ) : (
-                            <Text>{errorMessage}</Text>
-                        )
-                    }
+                                    </View>
+                                    <View style={style.visualInfo}>
+                                        <Text style={style.price}>R$ {item.price}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )
+                        }}
+                    />
                 </View>
             </View>
+            <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
+                <Text style={style.btnTxt}>Deseja declarar interesse neste serviço?</Text>
+                <View style={{flexDirection:'row', justifyContent:'space-between'}}>
+                    <Button mode='contained' style={style.button} onPress={declareInteresting}>
+                        <Text style={style.btnTxt}>SIM</Text>
+                    </Button>
+                    <Button mode='contained' style={style.button} onPress={hideModal}>
+                        <Text style={style.btnTxt}>NÃO</Text>
+                    </Button>
+                </View>
+            </Modal>
         </View>
     )
 }
@@ -159,5 +169,13 @@ const style = StyleSheet.create({
         fontSize: 20,
         color: '#2DAC0D',
         fontWeight: 'bold'
-    }
+    },
+    button: {
+        width: '40%',
+        marginBottom: 20,
+        marginTop:20
+    },
+    btnTxt: {
+        fontSize: 25
+    },
 })
